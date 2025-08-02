@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Scrumptious
+
+A modern project management application designed for agile teams that need structured goal-setting and daily stand-up tracking.
+
+## What is Scrumptious?
+
+Scrumptious is a comprehensive project management platform that follows a hierarchical approach to organizing work:
+
+- **Vision**: The overarching goal or purpose of a project
+- **Targets**: Sub-goals that contribute to achieving the vision
+- **Tasks**: Specific actionable items within each target
+
+The application integrates seamlessly with agile methodologies by providing built-in daily stand-up questionnaires and progress tracking.
+
+## Key Features
+
+### Project Management
+- **Hierarchical Structure**: Organize work from high-level visions down to specific tasks
+- **Target Management**: Create and track sub-goals with task counters
+- **Progress Visualization**: Clear overview of project status and completion rates
+
+### Daily Stand-ups
+- **Interactive Questionnaires**: Built-in forms for daily stand-up responses
+- **Team Updates**: Track what team members accomplished, plan to work on, and any blockers
+- **Historical Tracking**: View past stand-up responses and team progress over time
+
+### User Management
+- **Organization Settings**: Manage team members and organizational details
+- **Role-based Access**: Different permission levels for team members
+- **Billing Integration**: Usage tracking and plan management
+
+### Authentication & Security
+- **Secure Login**: Email/password authentication with remember me functionality
+- **User Registration**: Organization-based signup with domain verification
+- **Password Recovery**: Secure password reset flow
+- **Account Security**: Comprehensive security settings and notifications
+
+## Technology Stack
+
+- **Framework**: Next.js 15 with React 19
+- **Language**: TypeScript for type safety
+- **Styling**: Tailwind CSS with custom design system
+- **State Management**: React hooks (useState, useEffect, useRef)
+- **Navigation**: Next.js App Router with client-side routing
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Project Structure
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `/src/app/` - Main application pages and routing
+- `/src/app/login/` - Authentication screens (login, signup, forgot password)
+- `/src/app/project/[id]/` - Project detail pages with targets and tasks
+- `/src/app/settings/` - Organization management and user settings
+- `/src/app/standups/` - Daily stand-up management and history
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Create an Organization**: Sign up and set up your organization
+2. **Add Team Members**: Invite colleagues through the settings page
+3. **Start a Project**: Define your project vision and create targets
+4. **Daily Stand-ups**: Use the built-in questionnaire for daily check-ins
+5. **Track Progress**: Monitor target completion and team productivity
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Scrumptious streamlines agile project management by combining structured goal-setting with regular team communication, making it easier for teams to stay aligned and productive.

@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# inspo and scripts
+form-inspo
+test-db-connection*
+main-idea.txt
+.claude

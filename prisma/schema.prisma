@@ -1,0 +1,254 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  domain   String? @unique
+  settings Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users            User[]
+  projects         Project[]
+  invitations      Invitation[]
+  standupTemplates StandupTemplate[]
+  standups         Standup[]
+
+  @@map("organizations")
+}
+
+model User {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  email       String   @unique
+  firstName   String
+  lastName    String
+  password    String
+  role        UserRole @default(MEMBER)
+  isActive    Boolean  @default(true)
+  lastLoginAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign Keys
+  organizationId String @db.ObjectId
+  
+  // Relations
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  createdProjects  Project[]         @relation("ProjectCreator")
+  assignedTasks    Task[]            @relation("TaskAssignee")
+  standupResponses StandupResponse[]
+  sentInvitations  Invitation[]      @relation("InvitationSender")
+
+  @@map("users")
+}
+
+model Invitation {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  email     String
+  role      UserRole         @default(MEMBER)
+  status    InvitationStatus @default(PENDING)
+  token     String           @unique
+  expiresAt DateTime
+  
+  createdAt DateTime @default(now())
+  
+  // Foreign Keys
+  organizationId String @db.ObjectId
+  invitedById    String? @db.ObjectId
+  
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id])
+  invitedBy    User?        @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("invitations")
+}
+
+model Project {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  vision      String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign Keys
+  organizationId String @db.ObjectId
+  creatorId      String @db.ObjectId
+
+  // Relations
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  creator          User              @relation("ProjectCreator", fields: [creatorId], references: [id])
+  targets          Target[]
+  standups         Standup[]
+  standupTemplates StandupTemplate[]
+
+  @@map("projects")
+}
+
+model Target {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  status      TargetStatus @default(ACTIVE)
+  order       Int          @default(0)
+  
+  // Kanban board configuration
+  kanbanColumns Json @default("[{\"id\":\"todo\",\"name\":\"To Do\",\"color\":\"bg-gray-50\",\"dotColor\":\"bg-slate-400\",\"order\":0},{\"id\":\"in_progress\",\"name\":\"In Progress\",\"color\":\"bg-blue-50\",\"dotColor\":\"bg-blue-500\",\"order\":1},{\"id\":\"done\",\"name\":\"Done\",\"color\":\"bg-green-50\",\"dotColor\":\"bg-green-500\",\"order\":2}]")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign Keys
+  projectId String @db.ObjectId
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id])
+  tasks   Task[]
+
+  @@map("targets")
+}
+
+model Task {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  priority    Priority  @default(MEDIUM)
+  order       Int       @default(0)
+  dueDate     DateTime?
+  completedAt DateTime?
+  
+  // Dynamic kanban column reference
+  columnId String @default("todo")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign Keys
+  targetId   String  @db.ObjectId
+  assigneeId String? @db.ObjectId
+
+  // Relations
+  target   Target @relation(fields: [targetId], references: [id])
+  assignee User?  @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("tasks")
+}
+
+model StandupTemplate {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  isDefault   Boolean @default(false)
+  questions   Json    // Array of question objects with flexible structure
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign Keys
+  organizationId String  @db.ObjectId
+  projectId      String? @db.ObjectId // null for organization-wide templates
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id])
+  project      Project?     @relation(fields: [projectId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  standups     Standup[]
+
+  @@map("standup_templates")
+}
+
+model Standup {
+  id     String        @id @default(auto()) @map("_id") @db.ObjectId
+  date   DateTime      @db.Date
+  status StandupStatus @default(OPEN)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign Keys
+  templateId     String @db.ObjectId
+  projectId      String @db.ObjectId
+  organizationId String @db.ObjectId
+
+  // Relations
+  template     StandupTemplate   @relation(fields: [templateId], references: [id])
+  project      Project           @relation(fields: [projectId], references: [id])
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  responses    StandupResponse[]
+
+  @@unique([projectId, date])
+  @@map("standups")
+}
+
+model StandupResponse {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  responses   Json     // Array of response objects: [{ questionId, value, type }]
+  submittedAt DateTime
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign Keys
+  standupId String @db.ObjectId
+  userId    String @db.ObjectId
+
+  // Relations
+  standup Standup @relation(fields: [standupId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([standupId, userId])
+  @@map("standup_responses")
+}
+
+
+// Enums
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum TargetStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum StandupStatus {
+  OPEN
+  CLOSED
+}
