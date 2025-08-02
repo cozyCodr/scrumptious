@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "./generated/client"
 }
 
 datasource db {
@@ -11,11 +12,11 @@ datasource db {
 }
 
 model Organization {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
   name     String
   domain   String? @unique
   settings Json?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -30,21 +31,21 @@ model Organization {
 }
 
 model User {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  email       String   @unique
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  email       String    @unique
   firstName   String
   lastName    String
   password    String
-  role        UserRole @default(MEMBER)
-  isActive    Boolean  @default(true)
+  role        UserRole  @default(MEMBER)
+  isActive    Boolean   @default(true)
   lastLoginAt DateTime?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Foreign Keys
   organizationId String @db.ObjectId
-  
+
   // Relations
   organization     Organization      @relation(fields: [organizationId], references: [id])
   createdProjects  Project[]         @relation("ProjectCreator")
@@ -62,13 +63,13 @@ model Invitation {
   status    InvitationStatus @default(PENDING)
   token     String           @unique
   expiresAt DateTime
-  
+
   createdAt DateTime @default(now())
-  
+
   // Foreign Keys
-  organizationId String @db.ObjectId
+  organizationId String  @db.ObjectId
   invitedById    String? @db.ObjectId
-  
+
   // Relations
   organization Organization @relation(fields: [organizationId], references: [id])
   invitedBy    User?        @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -82,7 +83,7 @@ model Project {
   vision      String
   description String?
   status      ProjectStatus @default(ACTIVE)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -106,10 +107,10 @@ model Target {
   description String
   status      TargetStatus @default(ACTIVE)
   order       Int          @default(0)
-  
+
   // Kanban board configuration
   kanbanColumns Json @default("[{\"id\":\"todo\",\"name\":\"To Do\",\"color\":\"bg-gray-50\",\"dotColor\":\"bg-slate-400\",\"order\":0},{\"id\":\"in_progress\",\"name\":\"In Progress\",\"color\":\"bg-blue-50\",\"dotColor\":\"bg-blue-500\",\"order\":1},{\"id\":\"done\",\"name\":\"Done\",\"color\":\"bg-green-50\",\"dotColor\":\"bg-green-500\",\"order\":2}]")
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -131,10 +132,10 @@ model Task {
   order       Int       @default(0)
   dueDate     DateTime?
   completedAt DateTime?
-  
+
   // Dynamic kanban column reference
   columnId String @default("todo")
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -154,8 +155,8 @@ model StandupTemplate {
   name        String
   description String?
   isDefault   Boolean @default(false)
-  questions   Json    // Array of question objects with flexible structure
-  
+  questions   Json // Array of question objects with flexible structure
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -175,7 +176,7 @@ model Standup {
   id     String        @id @default(auto()) @map("_id") @db.ObjectId
   date   DateTime      @db.Date
   status StandupStatus @default(OPEN)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -196,9 +197,9 @@ model Standup {
 
 model StandupResponse {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  responses   Json     // Array of response objects: [{ questionId, value, type }]
+  responses   Json // Array of response objects: [{ questionId, value, type }]
   submittedAt DateTime
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -213,7 +214,6 @@ model StandupResponse {
   @@unique([standupId, userId])
   @@map("standup_responses")
 }
-
 
 // Enums
 enum UserRole {
@@ -239,7 +239,6 @@ enum TargetStatus {
   COMPLETED
   ARCHIVED
 }
-
 
 enum Priority {
   LOW
