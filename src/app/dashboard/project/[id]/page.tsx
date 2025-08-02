@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { getProjectDetailsAction } from '@/lib/project'
 import CreateTargetForm from '../../../components/CreateTargetForm'
 import ProjectActionsDropdown from '../../../components/ProjectActionsDropdown'
-import { UserRole } from '../../../../../prisma/generated/client'
 
 export default async function ProjectDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

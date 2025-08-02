@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import CreateTargetForm from './CreateTargetForm'
-import { UserRole } from '@prisma/client'
+import { UserRole } from '../../../prisma/generated/client'
 
 interface ProjectActionsDropdownProps {
   projectId: string
@@ -47,9 +47,9 @@ export default function ProjectActionsDropdown({ projectId, userRole }: ProjectA
           className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm flex items-center gap-2"
         >
           <span>Actions</span>
-          <svg 
-            className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
-            fill="currentColor" 
+          <svg
+            className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+            fill="currentColor"
             viewBox="0 0 20 20"
           >
             <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
