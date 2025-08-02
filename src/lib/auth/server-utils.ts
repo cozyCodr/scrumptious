@@ -3,7 +3,7 @@
 // Server-only utilities that use next/headers
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
-import { User } from '@prisma/client'
+import { User } from '../../../prisma/generated/client'
 import { verifyJWT, type JWTPayload } from './utils'
 
 export const getSessionUser = async (): Promise<User | null> => {

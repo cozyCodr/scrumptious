@@ -45,3 +45,4 @@ form-inspo
 test-db-connection*
 main-idea.txt
 .claude
+prisma/generated/*

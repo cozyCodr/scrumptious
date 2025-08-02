@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import { verifyJWT } from '@/lib/auth/utils'
 import { prisma } from '@/lib/prisma'
-import { UserRole, InvitationStatus } from '@prisma/client'
+import { UserRole, InvitationStatus } from '../../../prisma/generated/client'
 
 /**
  * Verify JWT token and get user
@@ -185,7 +185,7 @@ export async function inviteMemberAction(data: InviteMemberData): Promise<Settin
 
     // Generate invitation token
     const token = `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
+
     // Create invitation
     const invitation = await prisma.invitation.create({
       data: {
@@ -202,12 +202,12 @@ export async function inviteMemberAction(data: InviteMemberData): Promise<Settin
     console.log(`Invitation sent to ${data.email} with token: ${token}`)
 
     revalidatePath('/dashboard/settings')
-    return { 
-      success: true, 
-      data: { 
+    return {
+      success: true,
+      data: {
         invitationId: invitation.id,
-        message: `Invitation sent to ${data.email}` 
-      } 
+        message: `Invitation sent to ${data.email}`
+      }
     }
   } catch (error) {
     console.error('Invite member error:', error)

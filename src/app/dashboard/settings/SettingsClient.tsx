@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { 
-  inviteMemberAction, 
-  updateMemberRoleAction, 
+import {
+  inviteMemberAction,
+  updateMemberRoleAction,
   removeMemberAction,
-  cancelInvitationAction 
+  cancelInvitationAction
 } from '@/lib/settings/actions'
-import { UserRole } from '@prisma/client'
+import { UserRole } from '../../../../prisma/generated/client'
 
 interface Member {
   id: string
@@ -109,7 +109,7 @@ export default function SettingsClient({ initialData }: SettingsClientProps) {
 
   const handleRemoveMember = async (userId: string, memberName: string) => {
     if (!canManageMembers) return
-    
+
     if (!confirm(`Are you sure you want to remove ${memberName} from the organization?`)) {
       return
     }
@@ -132,7 +132,7 @@ export default function SettingsClient({ initialData }: SettingsClientProps) {
 
   const handleCancelInvitation = async (invitationId: string, email: string) => {
     if (!canManageMembers) return
-    
+
     if (!confirm(`Are you sure you want to cancel the invitation to ${email}?`)) {
       return
     }
@@ -203,21 +203,19 @@ export default function SettingsClient({ initialData }: SettingsClientProps) {
           <div className="flex space-x-8">
             <button
               onClick={() => setActiveTab('organization')}
-              className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                activeTab === 'organization'
+              className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${activeTab === 'organization'
                   ? 'border-slate-800 text-slate-800'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-              }`}
+                }`}
             >
               Organization
             </button>
             <button
               onClick={() => setActiveTab('members')}
-              className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                activeTab === 'members'
+              className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${activeTab === 'members'
                   ? 'border-slate-800 text-slate-800'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-              }`}
+                }`}
             >
               Members ({initialData.members.length})
             </button>
@@ -450,7 +448,7 @@ export default function SettingsClient({ initialData }: SettingsClientProps) {
                 </svg>
               </button>
             </div>
-            
+
             <form onSubmit={handleInviteMember}>
               <div className="mb-5">
                 <label className="block text-sm font-medium text-slate-700 mb-1">

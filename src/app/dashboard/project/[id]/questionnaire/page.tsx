@@ -2,18 +2,18 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getProjectDetailsAction } from '@/lib/project'
 import QuestionnaireManager from './QuestionnaireManager'
-import { UserRole } from '@prisma/client'
+import { UserRole } from '../../../../../../prisma/generated/client'
 
-export default async function QuestionnairePage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
+export default async function QuestionnairePage({
+  params
+}: {
+  params: Promise<{ id: string }>
 }) {
   const { id: projectId } = await params
-  
+
   // Get project data to verify access
   const projectData = await getProjectDetailsAction(projectId)
-  
+
   if (!projectData) {
     redirect('/dashboard')
   }
