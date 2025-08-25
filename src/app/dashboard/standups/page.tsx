@@ -18,10 +18,11 @@ interface StandupUpdate {
   userName: string;
   timestamp: string;
   responses: {
-    accomplished: string;
-    today: string;
-    blockers: string;
-  };
+    questionId: string;
+    questionText: string;
+    value: string;
+    type: string;
+  }[];
   taskLinks?: TaskLink[];
 }
 
@@ -162,13 +163,10 @@ export default function DailyStandups() {
   const dateKeys = Object.keys(groupedUpdates);
 
   const getSummaryText = (update: StandupUpdate) => {
-    const accomplishedText = update.responses.accomplished || '';
-    const todayText = update.responses.today || '';
-    const blockersText = update.responses.blockers || '';
-    
-    // Combine all text and truncate to ~100 characters
-    const allText = [accomplishedText, todayText, blockersText]
-      .filter(text => text && text.trim() !== 'No blockers today.' && text.trim() !== 'No blockers today')
+    // Combine all response text and truncate to ~100 characters
+    const allText = update.responses
+      .map(r => r.value)
+      .filter(text => text && text.trim())
       .join(' ');
     
     if (allText.length <= 100) return allText;
@@ -418,41 +416,29 @@ export default function DailyStandups() {
 
                     {/* Responses */}
                     <div className="space-y-4 ml-13">
-                      {update.responses.accomplished && (
-                        <div>
+                      {update.responses.map((response, index) => (
+                        <div key={response.questionId}>
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <div className="text-sm font-semibold text-green-700">Accomplished</div>
+                            <div className={`w-2 h-2 rounded-full ${
+                              index === 0 ? 'bg-green-500' :
+                              index === 1 ? 'bg-blue-500' :
+                              index === 2 ? 'bg-orange-500' :
+                              index === 3 ? 'bg-purple-500' :
+                              'bg-gray-500'
+                            }`}></div>
+                            <div className={`text-sm font-semibold ${
+                              index === 0 ? 'text-green-700' :
+                              index === 1 ? 'text-blue-700' :
+                              index === 2 ? 'text-orange-700' :
+                              index === 3 ? 'text-purple-700' :
+                              'text-gray-700'
+                            }`}>{response.questionText}</div>
                           </div>
                           <div className="text-gray-700 leading-relaxed pl-4">
-                            {update.responses.accomplished}
+                            {response.value}
                           </div>
                         </div>
-                      )}
-
-                      {update.responses.today && (
-                        <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            <div className="text-sm font-semibold text-blue-700">Today's Focus</div>
-                          </div>
-                          <div className="text-gray-700 leading-relaxed pl-4">
-                            {update.responses.today}
-                          </div>
-                        </div>
-                      )}
-
-                      {update.responses.blockers && (
-                        <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                            <div className="text-sm font-semibold text-orange-700">Blockers</div>
-                          </div>
-                          <div className="text-gray-700 leading-relaxed pl-4">
-                            {update.responses.blockers}
-                          </div>
-                        </div>
-                      )}
+                      ))}
 
                       {/* Task Links */}
                       {update.taskLinks && update.taskLinks.length > 0 && (

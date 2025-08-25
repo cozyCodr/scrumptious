@@ -144,14 +144,37 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
                         <p className="font-medium text-sm text-slate-700 mb-2">
                           {person}
                         </p>
-                        <div className="text-xs text-slate-600 space-y-1">
-                          {typeof responses === 'object' ? (
+                        <div className="text-xs text-slate-600 space-y-3">
+                          {Array.isArray(responses) ? (
+                            responses.map((response: any, index: number) => (
+                              <div key={index}>
+                                <div className="text-xs text-slate-500 font-medium mb-1">
+                                  {response.questionText || 'Response'}
+                                </div>
+                                <div className="text-sm text-slate-700">
+                                  {typeof response.value === 'string' 
+                                    ? response.value 
+                                    : typeof response.value === 'object' && response.value?.description
+                                      ? response.value.description
+                                      : 'No response'}
+                                </div>
+                              </div>
+                            ))
+                          ) : typeof responses === 'object' ? (
                             Object.entries(responses).map(([key, value]) => (
-                              // @ts-ignore
-                              <p key={key}><span className="font-medium">{key}:</span> {value}</p>
+                              <div key={key}>
+                                <div className="text-xs text-slate-500 font-medium mb-1">
+                                  {key}
+                                </div>
+                                <div className="text-sm text-slate-700">
+                                  {String(value)}
+                                </div>
+                              </div>
                             ))
                           ) : (
-                            <p>{responses}</p>
+                            <div className="text-sm text-slate-700">
+                              {String(responses)}
+                            </div>
                           )}
                         </div>
                       </div>

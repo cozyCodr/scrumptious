@@ -187,10 +187,12 @@ export async function signupAction(formData: SignupFormData): Promise<AuthRespon
 
     // Create organization and user in a transaction
     const result = await prisma.$transaction(async (tx) => {
-      // Create organization
+      // For now, always create a new organization per signup
+      // This can be enhanced later with domain-based organization joining
       const organization = await tx.organization.create({
         data: {
           name: organizationName.trim(),
+          domain: null, // Don't set domain to avoid unique constraint issues
           settings: {
             timezone: 'UTC',
             workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
@@ -199,7 +201,7 @@ export async function signupAction(formData: SignupFormData): Promise<AuthRespon
         },
       })
 
-      // Create user as owner
+      // Create user as owner of the new organization
       const user = await tx.user.create({
         data: {
           email: email.toLowerCase(),
@@ -227,6 +229,26 @@ export async function signupAction(formData: SignupFormData): Promise<AuthRespon
     return { success: true }
   } catch (error) {
     console.error('Signup error:', error)
+    
+    // Provide more specific error messages for common issues
+    if (error instanceof Error) {
+      if (error.message.includes('E11000') && error.message.includes('email')) {
+        return {
+          success: false,
+          errors: {
+            email: ['An account with this email already exists'],
+          },
+        }
+      }
+      
+      if (error.message.includes('validation')) {
+        return {
+          success: false,
+          error: 'Please check your input and try again.',
+        }
+      }
+    }
+    
     return {
       success: false,
       error: 'An unexpected error occurred. Please try again.',

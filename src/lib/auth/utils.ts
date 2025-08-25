@@ -85,18 +85,9 @@ export const validatePassword = (password: string): { isValid: boolean; errors: 
     errors.push('Password must be at least 8 characters long')
   }
 
-  if (!/[A-Z]/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter')
-  }
-
-  if (!/[a-z]/.test(password)) {
-    errors.push('Password must contain at least one lowercase letter')
-  }
-
-  if (!/\d/.test(password)) {
-    errors.push('Password must contain at least one number')
-  }
-
+  // Relaxed validation - only require minimum length for now
+  // Can add more requirements later based on security needs
+  
   return {
     isValid: errors.length === 0,
     errors,

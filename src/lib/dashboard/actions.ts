@@ -429,7 +429,9 @@ export async function submitQuickStandupAction(formData: QuickStandupFormData): 
           date: new Date(today),
           templateId: template.id,
           projectId: formData.projectId,
-          organizationId: user.organizationId
+          organizationId: user.organizationId,
+          // Store snapshot of questions at time of standup creation
+          questionsSnapshot: template.questions
         }
       })
     }

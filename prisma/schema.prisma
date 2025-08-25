@@ -53,6 +53,7 @@ model User {
   assignedTasks    Task[]            @relation("TaskAssignee")
   standupResponses StandupResponse[]
   sentInvitations  Invitation[]      @relation("InvitationSender")
+  timeEntries      TimeEntry[]
 
   @@map("users")
 }
@@ -98,6 +99,7 @@ model Project {
   targets          Target[]
   standups         Standup[]
   standupTemplates StandupTemplate[]
+  timeEntries      TimeEntry[]
 
   @@map("projects")
 }
@@ -119,8 +121,9 @@ model Target {
   projectId String @db.ObjectId
 
   // Relations
-  project Project @relation(fields: [projectId], references: [id])
-  tasks   Task[]
+  project     Project     @relation(fields: [projectId], references: [id])
+  tasks       Task[]
+  timeEntries TimeEntry[]
 
   @@map("targets")
 }
@@ -145,8 +148,9 @@ model Task {
   assigneeId String? @db.ObjectId
 
   // Relations
-  target   Target @relation(fields: [targetId], references: [id])
-  assignee User?  @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  target      Target      @relation(fields: [targetId], references: [id])
+  assignee    User?       @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  timeEntries TimeEntry[]
 
   @@map("tasks")
 }
@@ -177,6 +181,10 @@ model Standup {
   id     String        @id @default(auto()) @map("_id") @db.ObjectId
   date   DateTime      @db.Date
   status StandupStatus @default(OPEN)
+
+  // Snapshot of questions at time of standup creation
+  // This preserves the original questions even if the template is later modified
+  questionsSnapshot Json
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -214,6 +222,32 @@ model StandupResponse {
 
   @@unique([standupId, userId])
   @@map("standup_responses")
+}
+
+model TimeEntry {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  description String?
+  duration    Int       // Duration in minutes
+  startTime   DateTime
+  endTime     DateTime?
+  isRunning   Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign Keys
+  userId   String  @db.ObjectId
+  taskId   String? @db.ObjectId
+  targetId String? @db.ObjectId
+  projectId String  @db.ObjectId
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id])
+  task    Task?    @relation(fields: [taskId], references: [id])
+  target  Target?  @relation(fields: [targetId], references: [id])
+  project Project  @relation(fields: [projectId], references: [id])
+
+  @@map("time_entries")
 }
 
 // Enums

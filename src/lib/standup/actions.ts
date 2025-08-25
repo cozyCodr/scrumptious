@@ -9,11 +9,13 @@ export interface StandupData {
   userId: string
   userName: string
   timestamp: string
+  // Dynamic responses structure based on actual questions
   responses: {
-    accomplished: string
-    today: string
-    blockers: string
-  }
+    questionId: string
+    questionText: string
+    value: string
+    type: string
+  }[]
   taskLinks?: {
     taskId: string
     taskTitle: string
@@ -134,30 +136,72 @@ export async function getProjectStandupsAction(projectId?: string, limit = 20, o
     const formattedStandups: StandupData[] = []
 
     for (const standup of standupData) {
+      // Get questions from snapshot
+      const questions = Array.isArray(standup.questionsSnapshot) ? standup.questionsSnapshot : []
+
       for (const response of standup.responses) {
         // Parse the responses JSON
         const responses = Array.isArray(response.responses)
           ? response.responses
           : []
 
+        // Build dynamic responses array using questions snapshot
+        const dynamicResponses: { questionId: string, questionText: string, value: string, type: string }[] = []
+        const taskLinks: { taskId: string, taskTitle: string, targetName: string, projectId: string, targetId: string }[] = []
+        
         // @ts-ignore
-        const accomplishedAnswer = responses.find((r: any) => r.questionId === 'q1')?.value || ''
-        // @ts-ignore
-        const todayAnswer = responses.find((r: any) => r.questionId === 'q2')?.value || ''
-        // @ts-ignore
-        const blockersAnswer = responses.find((r: any) => r.questionId === 'q3')?.value || ''
+        questions.forEach((question: any) => {
+          // @ts-ignore
+          const answerData = responses.find((r: any) => r.questionId === question.id)?.value
+          
+          if (question.type === 'task' && answerData && typeof answerData === 'object') {
+            // Handle task responses
+            const { selectedTasks = [], description = '' } = answerData
+            
+            // Add task links - we'll need to fetch task details for these IDs
+            // For now, store the task IDs and we'll resolve details in a future enhancement
+            selectedTasks.forEach((taskId: string) => {
+              taskLinks.push({
+                taskId,
+                taskTitle: `Task ${taskId}`,
+                targetName: 'Target',
+                projectId: standup.projectId,
+                targetId: 'target-id'
+              })
+            })
+            
+            // Add the text response if it exists
+            if (description.trim()) {
+              dynamicResponses.push({
+                questionId: question.id,
+                questionText: question.text,
+                value: description,
+                type: question.type
+              })
+            }
+          } else {
+            // Handle regular text responses
+            const answer = answerData?.toString() || ''
+            
+            // Only include responses that have values
+            if (answer.trim()) {
+              dynamicResponses.push({
+                questionId: question.id,
+                questionText: question.text,
+                value: answer,
+                type: question.type
+              })
+            }
+          }
+        })
 
         formattedStandups.push({
           id: `${standup.id}-${response.userId}`,
           userId: response.user.id,
           userName: `${response.user.firstName} ${response.user.lastName}`,
           timestamp: response.submittedAt.toISOString(),
-          responses: {
-            accomplished: accomplishedAnswer,
-            today: todayAnswer,
-            blockers: blockersAnswer
-          }
-          // Note: taskLinks would need to be implemented separately if needed
+          responses: dynamicResponses,
+          taskLinks: taskLinks.length > 0 ? taskLinks : undefined
         })
       }
     }
@@ -304,6 +348,69 @@ export async function getQuestionnaireTemplateAction(projectId: string) {
   } catch (error) {
     console.error('Get questionnaire template error:', error)
     return null
+  }
+}
+
+// Get tasks for a project (for task linking in questionnaires)
+export async function getProjectTasksAction(projectId: string) {
+  try {
+    const user = await getSessionUser()
+    if (!user) return []
+
+    // Verify user has access to this project
+    const project = await prisma.project.findFirst({
+      where: {
+        id: projectId,
+        organizationId: user.organizationId
+      },
+      include: {
+        targets: {
+          where: { status: 'ACTIVE' },
+          include: {
+            tasks: {
+              where: { completedAt: null }, // Only get incomplete tasks
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                priority: true,
+                targetId: true,
+                assigneeId: true,
+                assignee: {
+                  select: {
+                    firstName: true,
+                    lastName: true
+                  }
+                }
+              },
+              orderBy: { createdAt: 'desc' }
+            }
+          },
+          orderBy: { order: 'asc' }
+        }
+      }
+    })
+
+    if (!project) return []
+
+    // Flatten tasks with target information
+    const tasks = project.targets.flatMap(target => 
+      target.tasks.map(task => ({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        targetId: target.id,
+        targetTitle: target.title,
+        assigneeName: task.assignee ? `${task.assignee.firstName} ${task.assignee.lastName}` : null,
+        isAssignedToMe: task.assigneeId === user.id
+      }))
+    )
+
+    return tasks
+  } catch (error) {
+    console.error('Get project tasks error:', error)
+    return []
   }
 }
 

@@ -84,13 +84,29 @@ export async function getProjectDetailsAction(projectId: string) {
       createdAt: target.createdAt
     }))
 
-    // Format standups
+    // Format standups with proper question text from snapshots
     const standups = recentStandups.map(standup => ({
       id: standup.id,
       date: standup.date.toISOString().split('T')[0],
       responses: standup.responses.reduce((acc, response) => {
         const userName = `${response.user.firstName} ${response.user.lastName}`
-        acc[userName] = response.responses
+        const questions = Array.isArray(standup.questionsSnapshot) ? standup.questionsSnapshot : []
+        
+        // Build properly formatted responses with question text
+        const formattedResponses = Array.isArray(response.responses) 
+          ? response.responses.map((r: any) => {
+              // @ts-ignore
+              const question = questions.find((q: any) => q.id === r.questionId)
+              return {
+                questionId: r.questionId,
+                questionText: question?.text || 'Question',
+                value: r.value,
+                type: question?.type || 'text'
+              }
+            })
+          : []
+        
+        acc[userName] = formattedResponses
         return acc
       }, {} as Record<string, any>)
     }))
